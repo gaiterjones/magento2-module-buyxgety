@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="Gaiterjones" translate="label" sortOrder="10">
+            <label>Gaiterjones</label>
+        </tab>
+        <section id="buyxgety" translate="label" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+            <class>separator-top</class>
+            <label>Buy X Get Y</label>
+            <tab>Gaiterjones</tab>
+            <resource>Gaiterjones_BuyXGetY::buyxgety_configuration</resource>
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>General Configuration</label>
+                <field id="enable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Module Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="productxsku" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Product X SKU List</label>
+                    <comment>Comma seperated list of Product X SKU's</comment>
+                </field>
+                <field id="productxminrequiredqty" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Product X Minimum Required Quantity</label>
+                    <comment>Comma seperated list of Minimum Required Quantities for Product X</comment>
+                </field>
+                <field id="productysku" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Product Y SKU List</label>
+                    <comment>Comma seperated list of Product Y SKU's</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

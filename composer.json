@@ -1,0 +1,29 @@
+{
+  "name": "gaiterjones/buyxgety",
+  "description": "Gaiterjones Buy X Get Y Module",
+  "type": "magento2-module",
+  "version": "1.0.1",
+  "license": [
+    "OSL-3.0",
+    "AFL-3.0"
+  ],
+  "require": {
+    "php": "~5.5.0|~5.6.0|~7.0.0",
+    "magento/framework": "~100.0.4",
+    "gaiterjones/magento2-module-buyxgety": "*"
+  },
+  "extra": {
+          "map": [
+              [
+                  "*",
+                  "Gaiterjones/BuyXGetY"
+              ]
+          ]
+      },
+  "autoload": {
+    "files": [ "registration.php" ],
+    "psr-4": {
+      "Gaiterjones\\BuyXGetY\\": ""
+    }
+  }
+}
