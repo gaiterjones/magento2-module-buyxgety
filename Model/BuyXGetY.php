@@ -360,12 +360,14 @@ class BuyXGetY extends \Magento\Framework\Model\AbstractModel
         // build cart data arrqy
         //
         $cartItems = $this->_helperData->getCartAllItems();
+        $cartItemQuantities=array();
         $cartData=false;
         $count=0;
 
         foreach ($cartItems as $item)
         {
             $count++;
+            
             // if item has parent, use parent
             //
             if ($item->getParentItem()) {$item=$item->getParentItem();}
@@ -378,7 +380,7 @@ class BuyXGetY extends \Magento\Framework\Model\AbstractModel
                 'productid' => $item->getProduct()->getId(),
             );
 
-            // buil quantities array to get totals for products with parents, i.e. configurable products
+            // build quantities array to get true totals for products with parents, i.e. configurable products
             //
             $cartItemQuantities[$item->getProduct()->getId()][] = $item->getQty();
         }

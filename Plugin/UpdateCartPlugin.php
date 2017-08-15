@@ -32,7 +32,8 @@ class UpdateCartPlugin
      */
     public function beforeupdateItems(\Magento\Checkout\Model\Cart $subject,$data)
     {
-
+        // TO DO - REMOVE this
+        //
         //$this->_buyxgety->log('beforeupdateItems Plugin');
         //$this->_buyxgety->CartUpdate();
         return [$data];
