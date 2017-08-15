@@ -17,10 +17,11 @@
               ]
           ]
       },
-  "autoload": {
-    "files": [ "registration.php" ],
-    "psr-4": {
-      "Gaiterjones\\BuyXGetY\\": ""
-    }
-  }
+      "authors": [
+          {
+              "name": "Peter Jones",
+              "homepage": "http://blog.gaiterjones.com/",
+              "role": "Developer"
+          }
+      ]
 }
