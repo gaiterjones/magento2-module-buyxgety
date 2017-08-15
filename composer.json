@@ -17,11 +17,11 @@
               ]
           ]
       },
-      "authors": [
-          {
-              "name": "Peter Jones",
-              "homepage": "http://blog.gaiterjones.com/",
-              "role": "Developer"
-          }
-      ]
+  "authors": [
+      {
+          "name": "Peter Jones",
+          "homepage": "http://blog.gaiterjones.com/",
+          "role": "Developer"
+      }
+  ]
 }
