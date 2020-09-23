@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <preference for="Gaiterjones\BuyXGetY\Controller\AbstractController\BuyXGetYLoaderInterface" type="\Gaiterjones\BuyXGetY\Controller\AbstractController\BuyXGetYLoader" />
-    <type name="Magento\Checkout\Model\Cart">
-        <plugin name="interceptUpdateProductToCart" type="Gaiterjones\BuyXGetY\Plugin\UpdateCartPlugin"/>
-    </type>
-</config>

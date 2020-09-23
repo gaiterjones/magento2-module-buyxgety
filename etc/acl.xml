@@ -2,10 +2,10 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
     <acl>
         <resources>
-            <resource id="Gaiterjones_Adminhtml::admin">
-                <resource id="Gaiterjones_Adminhtml::stores">
-                    <resource id="Gaiterjones_Adminhtml::stores_settings">
-                        <resource id="Gaiterjones_Adminhtml::config">
+            <resource id="Gaiterjones_Adminhtml::admin" title="BuyXGetY admin">
+                <resource id="Gaiterjones_Adminhtml::stores" title="BuyXGetY stores">
+                    <resource id="Gaiterjones_Adminhtml::stores_settings" title="BuyXGetY settings">
+                        <resource id="Gaiterjones_Adminhtml::config" title="BuyXGetY config">
                             <resource id="Gaiterjones_BuyXGetY::config_buyxgety" title="BuyXGetY Section" sortOrder="50" />
                         </resource>
                     </resource>

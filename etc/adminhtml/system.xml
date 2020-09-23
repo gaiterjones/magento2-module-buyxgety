@@ -9,23 +9,54 @@
             <label>Buy X Get Y</label>
             <tab>Gaiterjones</tab>
             <resource>Gaiterjones_BuyXGetY::buyxgety_configuration</resource>
-            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
-                <label>General Configuration</label>
-                <field id="enable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
-                    <label>Module Enable</label>
+            <group id="buyxgety" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Buy X Get Y</label>
+                <field id="buyxgetyenable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Buy X Get Y Enable</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="productxsku" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                <field id="productxsku" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Product X SKU List</label>
-                    <comment>Comma seperated list of Product X SKU's</comment>
+                    <comment>Comma seperated list of Product X SKU's. For wildcard SKU use LIKE tags.</comment>
                 </field>
-                <field id="productxminrequiredqty" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                <field id="productxminrequiredqty" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Product X Minimum Required Quantity</label>
-                    <comment>Comma seperated list of Minimum Required Quantities for Product X</comment>
+                    <comment>Comma seperated list of Minimum Required Quantities for Product X that ust be in the cart to qualify for product Y.</comment>
                 </field>
-                <field id="productysku" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                <field id="productxmaxallowedqty" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Product X Maxmimum Allowed Quantity</label>
+                    <comment>Comma seperated list of Maximum allowed quantity of product X permitted in the cart to qualify for product Y.</comment>
+                </field>
+                <field id="productysku" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Product Y SKU List</label>
                     <comment>Comma seperated list of Product Y SKU's</comment>
+                </field>
+                <field id="productydescription" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Product Y Description</label>
+                    <comment>Description of Product Y, use comma seperated values for multiple products. i.e. Free Gift,Bonus Product,Special Bonus.</comment>
+                </field>
+            </group>
+            <group id="spendxgety" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Spend X Get Y</label>
+                <field id="spendxgetyenable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Spend X Get Y Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="spendproductysku" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Product Y SKU List</label>
+                    <comment>Comma seperated list of Product Y SKU's</comment>
+                </field>
+                <field id="spendcartylimit" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Cart MAXIMUM sub total required to qualify for Product Y</label>
+                    <comment>Cart maximum base currency subtotal required to qualify for product Y, use comma seperated values for multiple products, if empty default is 0</comment>
+                </field>
+                <field id="spendcarttotalrequired" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Cart MINIMUM sub total required to qualify for Product Y</label>
+                    <comment>Cart minimum subtotal required to qualify for product Y, use comma seperated values for multiple products, i.e. 50,100,200</comment>
+                </field>
+                <field id="productydescription" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Product Y Description</label>
+                    <comment>Description of Product Y, use comma seperated values for multiple products. i.e. Free Gift,Bonus Product,Special Bonus.</comment>
                 </field>
             </group>
         </section>
