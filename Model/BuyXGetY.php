@@ -20,7 +20,7 @@ use \Psr\Log\LoggerInterface;
 /**
  * BuyXGetY Model
  */
-class BuyXGetY
+class BuyXGetY extends \Magento\Framework\Model\AbstractModel
 {
 
     /**
@@ -502,7 +502,7 @@ class BuyXGetY
 
         $this->log(array('BUYXGETY' => $cartData));
         $this->log('BUYXGETY Total Cart Items : '. $count);
-        
+
         if (count($cartData) > 0 )
         {
             return $cartData;

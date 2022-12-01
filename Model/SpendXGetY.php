@@ -20,7 +20,7 @@ use \Psr\Log\LoggerInterface;
 /**
  * BuyXGetY Model
  */
-class SpendXGetY
+class SpendXGetY extends \Magento\Framework\Model\AbstractModel
 {
 
     /**
