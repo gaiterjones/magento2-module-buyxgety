@@ -94,16 +94,16 @@ class SpendXGetY extends \Magento\Framework\Model\AbstractModel
 
         $this->_debug=true;
 
-        $productYSku=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/spendxgety/spendproductysku')));
+        if ($this->_helperData->getConfig('buyxgety/spendxgety/spendproductysku')){$productYSku=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/spendxgety/spendproductysku')));}
         if (empty($productYSku)){$productYSku=false;}
 
-        $spendCartYLimit=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/spendxgety/spendcartylimit')));
+        if ($this->_helperData->getConfig('buyxgety/spendxgety/spendcartylimit')){$spendCartYLimit=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/spendxgety/spendcartylimit')));}
         if (empty($spendCartYLimit)){$spendCartYLimit=0;}
 
-        $spendCartTotalRequired=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/spendxgety/spendcarttotalrequired')));
+        if ($this->_helperData->getConfig('buyxgety/spendxgety/spendcarttotalrequired')){$spendCartTotalRequired=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/spendxgety/spendcarttotalrequired')));}
         if (empty($spendCartTotalRequired)){$spendCartTotalRequired=false;}
 
-        $productYDescription=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/spendxgety/productydescription')));
+        if ($this->_helperData->getConfig('buyxgety/spendxgety/productydescription')){$productYDescription=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/spendxgety/productydescription')));}
         if (empty($productYDescription)){$productYDescription=false;}
 
         $config=array(

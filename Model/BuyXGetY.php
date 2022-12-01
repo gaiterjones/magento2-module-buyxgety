@@ -94,19 +94,19 @@ class BuyXGetY extends \Magento\Framework\Model\AbstractModel
 
         $this->_debug=true;
 
-        $productXSku=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/buyxgety/productxsku')));
+        if ($this->_helperData->getConfig('buyxgety/buyxgety/productxsku')){$productXSku=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/buyxgety/productxsku')));}
         if (empty($productXSku)){$productXSku=false;}
 
-        $productXMinRequiredQty=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/buyxgety/productxminrequiredqty')));
+        if ($this->_helperData->getConfig('buyxgety/buyxgety/productxminrequiredqty')){$productXMinRequiredQty=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/buyxgety/productxminrequiredqty')));}
         if (empty($productXMinRequiredQty)){$productXMinRequiredQty=false;}
 
-        $productXMaxAllowedQty=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/buyxgety/productxmaxallowedqty')));
+        if ($this->_helperData->getConfig('buyxgety/buyxgety/productxmaxallowedqty')){$productXMaxAllowedQty=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/buyxgety/productxmaxallowedqty')));}
         if (empty($productXMaxAllowedQty)){$productXMaxAllowedQty=false;}
 
-        $productYSku=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/buyxgety/productysku')));
+        if ($this->_helperData->getConfig('buyxgety/buyxgety/productysku')){$productYSku=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/buyxgety/productysku')));}
         if (empty($productYSku)){$productYSku=false;}
 
-        $productYDescription=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/buyxgety/productydescription')));
+        if ($this->_helperData->getConfig('buyxgety/buyxgety/productydescription')){$productYDescription=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/buyxgety/productydescription')));}
         if (empty($productYDescription)){$productYDescription=false;}
 
         $config=array(
