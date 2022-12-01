@@ -20,7 +20,7 @@ use \Psr\Log\LoggerInterface;
 /**
  * BuyXGetY Model
  */
-class SpendXGetY extends \Magento\Framework\Model\AbstractModel
+class SpendXGetY
 {
 
     /**
@@ -262,7 +262,7 @@ class SpendXGetY extends \Magento\Framework\Model\AbstractModel
         $cartItems = $this->_helperData->getCartAllItems();
         $cartItemQuantities=array();
         $cartItemQuantitiesBySku=array();
-        $cartData=false;
+        $cartData=array();
         $count=0;
 
         foreach ($cartItems as $item)
@@ -292,7 +292,12 @@ class SpendXGetY extends \Magento\Framework\Model\AbstractModel
 
         $this->log(array('BUYXGETY' => $cartData));
         $this->log('BUYXGETY Total Cart Items : '. $count);
-        return $cartData;
+
+        if (count($cartData) > 0 )
+        {
+            return $cartData;
+        }
+        return false;
 
     }
 

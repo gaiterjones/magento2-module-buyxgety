@@ -20,7 +20,7 @@ use \Psr\Log\LoggerInterface;
 /**
  * BuyXGetY Model
  */
-class BuyXGetY extends \Magento\Framework\Model\AbstractModel
+class BuyXGetY
 {
 
     /**
@@ -184,6 +184,7 @@ class BuyXGetY extends \Magento\Framework\Model\AbstractModel
         $cartData=$this->getCartItems();
 
         $wildcardSku=false;
+
         // update cart
         //
         if ($cartData)
@@ -471,7 +472,7 @@ class BuyXGetY extends \Magento\Framework\Model\AbstractModel
         $cartItems = $this->_helperData->getCartAllItems();
         $cartItemQuantities=array();
         $cartItemQuantitiesBySku=array();
-        $cartData=false;
+        $cartData=array();
         $count=0;
 
         foreach ($cartItems as $item)
@@ -501,7 +502,12 @@ class BuyXGetY extends \Magento\Framework\Model\AbstractModel
 
         $this->log(array('BUYXGETY' => $cartData));
         $this->log('BUYXGETY Total Cart Items : '. $count);
-        return $cartData;
+        
+        if (count($cartData) > 0 )
+        {
+            return $cartData;
+        }
+        return false;
 
     }
 
