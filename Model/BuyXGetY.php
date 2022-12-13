@@ -314,6 +314,14 @@ class BuyXGetY extends \Magento\Framework\Model\AbstractModel
                     // product y NOT in Cart
                     // add product y
                     $this->log('product x['.$productXCartQuantity. '] (min='. $productXMinQtys[$key]. '/max='. $productXMaxQtys[$key]. ') IN cart product y NOT in cart - adding product y : '. $productYSkus[$key]);
+                    if (!isset($productYDescriptions[$key])){
+                        if (isset($productYDescriptions[0]))
+                        {
+                            $productYDescriptions[$key]=$productYDescriptions[0];
+                        } else {
+                            $productYDescriptions[$key]='Free Product';
+                        }
+                    }
                     $this->addProductToCart($productYSkus[$key],1,$productYDescriptions[$key]);
                     continue;
 
@@ -337,6 +345,14 @@ class BuyXGetY extends \Magento\Framework\Model\AbstractModel
                     // product y IS in Cart
                     $this->log('product x['.$productXCartQuantity. '] (min='. $productXMinQtys[$key]. '/max='. $productXMaxQtys[$key]. ') not in cart or does not mee max min requirements '. $productXMinQtys[$key]. '/'. $productXMaxQtys[$key]. ' product y IS in cart - product y should be removed.');
                     $itemId=$cartData[$productYSkus[$key]]['itemid'];
+                    if (!isset($productYDescriptions[$key])){
+                        if (isset($productYDescriptions[0]))
+                        {
+                            $productYDescriptions[$key]=$productYDescriptions[0];
+                        } else {
+                            $productYDescriptions[$key]='Free Product';
+                        }
+                    }
                     $this->removeProductFromCart($itemId,$productYDescriptions[$key]);
                     continue;
                 }
@@ -549,7 +565,7 @@ class BuyXGetY extends \Magento\Framework\Model\AbstractModel
     private function cleanArray($array)
     {
         foreach ($array as $key => $value) {
-            if (empty($value)) {
+            if (empty($value) && $value !=0) {
                unset($array[$key]);
             }
         }

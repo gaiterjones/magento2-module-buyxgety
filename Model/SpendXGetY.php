@@ -155,7 +155,7 @@ class SpendXGetY extends \Magento\Framework\Model\AbstractModel
         // is module enabled
         //
         if (!$this->isEnabled()){
-            $this->log('BUYXGETY SPEND X functionality is disabled in config.');
+            $this->log('SPENDXGETY SPEND X functionality is disabled in config.');
             return;
         }
 
@@ -164,7 +164,7 @@ class SpendXGetY extends \Magento\Framework\Model\AbstractModel
         if (!$this->isConfigValid())
         {
             $this->addMessage(__('Spend X Get Y configuration is invalid.'),'error');
-            $this->log('BUYXGETY SPENDX configuration is invalid '. print_r($this->_buyxgety['config']['spendxgety'],true));
+            $this->log('SPENDXGETY SPENDX configuration is invalid '. print_r($this->_buyxgety['config']['spendxgety'],true));
             return;
         }
 
@@ -181,9 +181,19 @@ class SpendXGetY extends \Magento\Framework\Model\AbstractModel
 
         foreach ($productYSkus as $key => $productYSku)
         {
-            if ($subTotal >= $spendCartTotalRequired[$key])
+
+            if (
+                    $subTotal >= $spendCartTotalRequired[$key]
+                    &&
+                    (
+                        $subTotal < $spendCartYLimit[$key]
+                        ||
+                        $spendCartYLimit[$key]==0
+                    )
+                )
             {
-                $this->log('BUYXGETY cart sub total of '. $subTotal. ' meets minimum requirement of '. $spendCartTotalRequired[$key]);
+
+                $this->log('SPENDXGETY cart sub total of '. $subTotal. ' meets minimum requirement of '. $spendCartTotalRequired[$key]);
 
                 // LOGIC
                 //
@@ -212,6 +222,15 @@ class SpendXGetY extends \Magento\Framework\Model\AbstractModel
                         // product y NOT IN Cart
                         // minimum spend requirement met
                         $this->log('product y NOT in cart - minimum spend requirement met - add to cart');
+
+                        if (!isset($productYDescriptions[$key])){
+                            if (isset($productYDescriptions[0]))
+                            {
+                                $productYDescriptions[$key]=$productYDescriptions[0];
+                            } else {
+                                $productYDescriptions[$key]='Free Product';
+                            }
+                        }
                         $this->addProductToCart($productYSkus[$key],1,$productYDescriptions[$key]);
 
                     }
@@ -225,7 +244,7 @@ class SpendXGetY extends \Magento\Framework\Model\AbstractModel
                 if ($cartData)
                 {
 
-                    $this->log('BUYXGETY cart sub total of '. $subTotal. ' does not meet minimum requirement of '. $spendCartTotalRequired[$key]);
+                    $this->log('SPENDXGETY cart sub total of '. $subTotal. ' does not meet minimum requirement of '. $spendCartTotalRequired[$key]);
 
                     if (
                             isset($cartData[$productYSkus[$key]])
@@ -235,6 +254,7 @@ class SpendXGetY extends \Magento\Framework\Model\AbstractModel
                         // minimum spend requirement NOT met - remove from cart
                         $this->log('product y IN cart - minimum spend requirement NOT met - remove from cart');
                         $itemId=$cartData[$productYSkus[$key]]['itemid'];
+                        if (!isset($productYDescriptions[$key])){$productYDescriptions[$key]='Free Product';}
                         $this->removeProductFromCart($itemId,$productYDescriptions[$key]);
 
                     } else {
@@ -242,6 +262,46 @@ class SpendXGetY extends \Magento\Framework\Model\AbstractModel
                         $this->log('product y NOT IN cart');
                     }
                 }
+            }
+
+            if ($subTotal >= $spendCartYLimit[$key] && $spendCartYLimit[$key] !=0)
+            {
+                $this->log('SPENDXGETY cart sub total of '. $subTotal. ' exceeds max Y limit of '. $spendCartYLimit[$key]);
+
+                // LOGIC
+                //
+                $cartData=$this->getCartItems();
+                if ($cartData)
+                {
+
+                    // LOGIC 1
+                    if (
+                            isset($cartData[$productYSkus[$key]])
+                        )
+                    {
+                        // product y IN Cart
+                        // Y limit exceeded
+                        $this->log('product y IN cart - y limit exceeded - remove poduct y');
+                        $itemId=$cartData[$productYSkus[$key]]['itemid'];
+                        if (!isset($productYDescriptions[$key])){
+                            if (isset($productYDescriptions[0]))
+                            {
+                                $productYDescriptions[$key]=$productYDescriptions[0];
+                            } else {
+                                $productYDescriptions[$key]='Free Product';
+                            }
+                        }
+                        $this->removeProductFromCart($itemId,$productYDescriptions[$key]);
+
+                    } else {
+
+                        // product y NOT IN Cart
+                        // Y limit exceeded
+                        $this->log('product y NOT in cart - y limit exceeded - do nothing.');
+                    }
+
+                }
+
             }
         }
 
@@ -290,8 +350,8 @@ class SpendXGetY extends \Magento\Framework\Model\AbstractModel
         $cartData['cartItemQuantities']=$cartItemQuantities;
         $cartData['cartItemQuantitiesBySku']=$cartItemQuantitiesBySku;
 
-        $this->log(array('BUYXGETY' => $cartData));
-        $this->log('BUYXGETY Total Cart Items : '. $count);
+        $this->log(array('SPENDXXGETY' => $cartData));
+        $this->log('SPENDXXGETY Total Cart Items : '. $count);
 
         if (count($cartData) > 0 )
         {
@@ -436,9 +496,9 @@ class SpendXGetY extends \Magento\Framework\Model\AbstractModel
 
         if (is_array($data))
         {
-            $this->_logger->debug('debug BUYXGETY : '. print_r($data,true));
+            $this->_logger->debug('debug SPENDXXGETY : '. print_r($data,true));
         } else {
-            $this->_logger->debug('debug BUYXGETY : '. $data);
+            $this->_logger->debug('debug SPENDXXGETY : '. $data);
         }
 
     }
@@ -452,7 +512,7 @@ class SpendXGetY extends \Magento\Framework\Model\AbstractModel
     private function cleanArray($array)
     {
         foreach ($array as $key => $value) {
-            if (empty($value)) {
+            if (empty($value) && $value !=0) {
                unset($array[$key]);
             }
         }
