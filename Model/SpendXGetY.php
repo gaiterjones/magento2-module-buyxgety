@@ -92,7 +92,7 @@ class SpendXGetY extends \Magento\Framework\Model\AbstractModel
      */
     protected function loadConfig(){
 
-        $this->_debug=true;
+        $this->_debug=$this->_helperData->getConfig('buyxgety/settings/debugenable');
 
         if ($this->_helperData->getConfig('buyxgety/spendxgety/spendproductysku')){$productYSku=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/spendxgety/spendproductysku')));}
         if (empty($productYSku)){$productYSku=false;}
@@ -496,9 +496,9 @@ class SpendXGetY extends \Magento\Framework\Model\AbstractModel
 
         if (is_array($data))
         {
-            $this->_logger->debug('debug SPENDXXGETY : '. print_r($data,true));
+            $this->_logger->debug('debug SPENDXGETY : '. print_r($data,true));
         } else {
-            $this->_logger->debug('debug SPENDXXGETY : '. $data);
+            $this->_logger->debug('debug SPENDXGETY : '. $data);
         }
 
     }

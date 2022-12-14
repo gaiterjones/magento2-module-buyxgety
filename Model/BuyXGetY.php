@@ -92,7 +92,7 @@ class BuyXGetY extends \Magento\Framework\Model\AbstractModel
      */
     protected function loadConfig(){
 
-        $this->_debug=true;
+        $this->_debug=$this->_helperData->getConfig('buyxgety/settings/debugenable');
 
         if ($this->_helperData->getConfig('buyxgety/buyxgety/productxsku')){$productXSku=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/buyxgety/productxsku')));}
         if (empty($productXSku)){$productXSku=false;}

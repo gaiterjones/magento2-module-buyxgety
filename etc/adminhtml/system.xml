@@ -48,7 +48,7 @@
                 </field>
                 <field id="spendcartylimit" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Cart MAXIMUM sub total required to qualify for Product Y</label>
-                    <comment>Cart maximum base currency subtotal required to qualify for product Y, use comma seperated values for multiple products, if empty default is 0</comment>
+                    <comment>Cart maximum base currency subtotal required to qualify for product Y, use comma seperated values for multiple products. Set to zero to disable</comment>
                 </field>
                 <field id="spendcarttotalrequired" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Cart MINIMUM sub total required to qualify for Product Y</label>
@@ -57,6 +57,13 @@
                 <field id="productydescription" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Product Y Description</label>
                     <comment>Description of Product Y, use comma seperated values for multiple products. i.e. Free Gift,Bonus Product,Special Bonus.</comment>
+                </field>
+            </group>
+            <group id="settings" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Debug</label>
+                <field id="debugenable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Debug Logging</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>
         </section>
