@@ -10,6 +10,6 @@ Add product X to cart get product Y
 Spend X amount get product Y
 
 # Version
-1.2.1 01.12.2022
+October 2025
 
 for demo see https://magento2.gaiterjones.com/en/buy-x-get-y.html
