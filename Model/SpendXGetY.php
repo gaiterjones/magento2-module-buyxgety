@@ -1,534 +1,292 @@
 <?php
 /**
- *  Gaiterjones BuyXGetY Model
+ *  Gaiterjones BuyXGetY Model - Spend X Get Y (min/max subtotal)
  *
  *  @category    Gaiterjones
  *  @package     Gaiterjones_Buyxgety
- *  @author      modules@gaiterjones.com
- *
  */
 
 namespace Gaiterjones\BuyXGetY\Model;
-use Gaiterjones\BuyXGetY\Helper\Data;
-use \Magento\Catalog\Model\ProductRepository;
-use \Magento\Checkout\Model\Cart;
-use \Magento\Quote\Api\CartRepositoryInterface;
-use \Magento\Framework\Data\Form\FormKey;
-use \Magento\Framework\Message\ManagerInterface;
-use \Psr\Log\LoggerInterface;
 
-/**
- * BuyXGetY Model
- */
+use Gaiterjones\BuyXGetY\Helper\Data;
+use Magento\Catalog\Model\ProductRepository;
+use Magento\Checkout\Model\Cart;
+use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Framework\Data\Form\FormKey;
+use Magento\Framework\Message\ManagerInterface;
+use Psr\Log\LoggerInterface;
+
 class SpendXGetY extends \Magento\Framework\Model\AbstractModel
 {
-
-    /**
-     * @var ProductRepository
-     */
     protected $_productRepository;
-    /**
-     * @var Cart
-     */
     protected $_cart;
     protected $_cartInterface;
-    /**
-     * @var FormKey
-     */
     protected $formKey;
-    /**
-     * @var ManagerInterface
-     */
     protected $_messageManager;
-    /**
-     * @var Helper
-     */
     protected $_helperData;
-    /**
-     * @var LoggerInterface
-     */
     protected $_logger;
-    /**
-     * @var array
-     */
-    private $_buyxgety;
-    /**
-     * @var boolean
-     */
-    private $_debug;
 
-    /**
-     * @param ProductRepository $productRepository
-     * @param Cart $cart
-     * @param FormKey $formKey
-     * @param ManagerInterface $messageManager
-     * @param Data $helperData
-     * @param LoggerInterface $loggerInterface
-     */
+    private $_buyxgety = [];
+    private $_debug = false;
+
     public function __construct(
-        ProductRepository $productRepository,
-        Cart $cart,
-        FormKey $formKey,
-        ManagerInterface $messageManager,
-        Data $helperData,
-        LoggerInterface $loggerInterface,
+        ProductRepository       $productRepository,
+        Cart                    $cart,
+        FormKey                 $formKey,
+        ManagerInterface        $messageManager,
+        Data                    $helperData,
+        LoggerInterface         $loggerInterface,
         CartRepositoryInterface $cartInterface
     ) {
         $this->_productRepository = $productRepository;
-        $this->_cart = $cart;
-        $this->formKey = $formKey;
-        $this->_messageManager = $messageManager;
-        $this->_helperData = $helperData;
-        $this->_logger = $loggerInterface;
-        $this->_cartInterface=$cartInterface;
+        $this->_cart              = $cart;
+        $this->formKey            = $formKey;
+        $this->_messageManager    = $messageManager;
+        $this->_helperData        = $helperData;
+        $this->_logger            = $loggerInterface;
+        $this->_cartInterface     = $cartInterface;
         $this->loadConfig();
-
     }
 
-    /**
-     * loadConfig load BUYXGETY config data
-     *
-     * @return boolean
-     */
-    protected function loadConfig(){
-
-        $this->_debug=$this->_helperData->getConfig('buyxgety/settings/debugenable');
-
-        if ($this->_helperData->getConfig('buyxgety/spendxgety/spendproductysku')){$productYSku=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/spendxgety/spendproductysku')));}
-        if (empty($productYSku)){$productYSku=false;}
-
-        if ($this->_helperData->getConfig('buyxgety/spendxgety/spendcartylimit')){$spendCartYLimit=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/spendxgety/spendcartylimit')));}
-        if (empty($spendCartYLimit)){$spendCartYLimit=0;}
-
-        if ($this->_helperData->getConfig('buyxgety/spendxgety/spendcarttotalrequired')){$spendCartTotalRequired=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/spendxgety/spendcarttotalrequired')));}
-        if (empty($spendCartTotalRequired)){$spendCartTotalRequired=false;}
-
-        if ($this->_helperData->getConfig('buyxgety/spendxgety/productydescription')){$productYDescription=$this->cleanArray(explode(',',$this->_helperData->getConfig('buyxgety/spendxgety/productydescription')));}
-        if (empty($productYDescription)){$productYDescription=false;}
-
-        $config=array(
-            'spendxgety' => array(
-                'productysku'              => $productYSku,
-                'spendcartylimit'          => $spendCartYLimit,
-                'spendcarttotalrequired'   => $spendCartTotalRequired,
-                'productydescription'      => $productYDescription
-            )
-        );
-
-        $this->log($config);
-        $this->_buyxgety['config']=$config;
-    }
-
-    /**
-     * isConfigValid validate SPENDXGETY config data
-     *
-     * @return boolean
-     */
-    protected function isConfigValid()
+    protected function loadConfig(): void
     {
-        foreach($this->_buyxgety['config']['spendxgety'] as $key => $configData)
-        {
-            // ensure config values are unique
-            //
-            if ($key==='productydescription' ){continue;}
-            if ($key==='spendcarttotalrequired' ){continue;}
-            if ($key==='spendcartylimit' ){continue;}
+        $this->_debug = (bool)$this->_helperData->getConfig('buyxgety/general/debug');
 
-            if ($configData===false){return false;}
+        $productYSku            = $this->csvToArray($this->_helperData->getConfig('buyxgety/spendxgety/spendproductysku'));
+        $spendCartMaxRequired   = $this->csvToArray($this->_helperData->getConfig('buyxgety/spendxgety/spendcartylimit'), true); // 0 => no upper bound
+        $spendCartMinRequired   = $this->csvToArray($this->_helperData->getConfig('buyxgety/spendxgety/spendcarttotalrequired'), true);
+        $productYDescription    = $this->csvToArray($this->_helperData->getConfig('buyxgety/spendxgety/productydescription'), true);
 
-            if ($this->isUnique($configData)== true){
-                return false;
-            }
+        $config = [
+            'spendxgety' => [
+                'productysku'            => $productYSku ?: [],
+                'spendcartmaxrequired'   => $spendCartMaxRequired ?: [],
+                'spendcartminrequired'   => $spendCartMinRequired ?: [],
+                'productydescription'    => $productYDescription ?: [],
+            ]
+        ];
 
+        $this->_buyxgety['config'] = $config;
+        $this->log($config);
+    }
+
+    protected function isConfigValid(): bool
+    {
+        $cfg = $this->_buyxgety['config']['spendxgety'] ?? [];
+
+        foreach (['productysku','spendcartminrequired'] as $k) {
+            if (empty($cfg[$k]) || !is_array($cfg[$k])) return false;
         }
+
+        $count = count($cfg['productysku']);
+
+        // must align
+        foreach (['spendcartminrequired','spendcartmaxrequired'] as $k) {
+            if (!empty($cfg[$k]) && is_array($cfg[$k]) && count($cfg[$k]) !== $count) return false;
+        }
+        if (!empty($cfg['productydescription']) && count($cfg['productydescription']) !== $count) return false;
+
+        // numeric validation; min > 0; max >= min (unless max == 0)
+        for ($i = 0; $i < $count; $i++) {
+            $min = $cfg['spendcartminrequired'][$i] ?? null;
+            $max = $cfg['spendcartmaxrequired'][$i] ?? 0;
+
+            if (!is_numeric($min)) return false;
+            if (!is_numeric($max) && $max !== null) return false;
+
+            $min = (float)$min;
+            $max = (float)$max;
+
+            if ($min <= 0) return false;
+            if ($max !== 0.0 && $max < $min) return false;
+        }
+
+        // ensure Y SKUs unique (isUnique returns true when duplicates exist)
+        if ($this->isUnique($cfg['productysku']) === true) return false;
 
         return true;
     }
 
-    /**
-     * CartUpdate SPENDXGETY Cart Update Logic
-     *
-     * @return boolean
-     */
-    public function CartUpdate()
+    public function CartUpdate(): void
     {
-        // is module enabled
-        //
-        if (!$this->isEnabled()){
-            $this->log('SPENDXGETY SPEND X functionality is disabled in config.');
+        if (!$this->isEnabled()) {
+            $this->log('BUYXGETY SPEND X is disabled in config.');
             return;
         }
 
-        // is module config valid
-        //
-        if (!$this->isConfigValid())
-        {
-            $this->addMessage(__('Spend X Get Y configuration is invalid.'),'error');
-            $this->log('SPENDXGETY SPENDX configuration is invalid '. print_r($this->_buyxgety['config']['spendxgety'],true));
+        if (!$this->isConfigValid()) {
+            $this->addMessage(__('Spend X Get Y configuration is invalid.'), 'error');
+            $this->log('SPENDX invalid config ' . print_r($this->_buyxgety['config']['spendxgety'] ?? [], true));
             return;
         }
 
-        // get config
-        //
-        $productYSkus=$this->_buyxgety['config']['spendxgety']['productysku'];
-        $spendCartYLimit=$this->_buyxgety['config']['spendxgety']['spendcartylimit'];
-        $spendCartTotalRequired=$this->_buyxgety['config']['spendxgety']['spendcarttotalrequired'];
-        $productYDescriptions=$this->_buyxgety['config']['spendxgety']['productydescription'];
+        $cfg = $this->_buyxgety['config']['spendxgety'];
+        $productYSkus         = $cfg['productysku'];
+        $minThresholds        = $cfg['spendcartminrequired'];
+        $maxThresholds        = $cfg['spendcartmaxrequired'];
+        $productYDescriptions = $cfg['productydescription'];
 
-        // get cart total
-        //
-        $subTotal = $this->_cart->getQuote()->getBaseSubtotalWithDiscount();
+        // Toggle base vs store subtotal here if needed:
+        // $subTotal = (float)$this->_cart->getQuote()->getBaseSubtotalWithDiscount(); // base currency
+        $subTotal = (float)$this->_cart->getQuote()->getSubtotalWithDiscount();       // store currency (default)
 
-        foreach ($productYSkus as $key => $productYSku)
-        {
+        $cartData = $this->getCartItems();
 
-            if (
-                    $subTotal >= $spendCartTotalRequired[$key]
-                    &&
-                    (
-                        $subTotal < $spendCartYLimit[$key]
-                        ||
-                        $spendCartYLimit[$key]==0
-                    )
-                )
-            {
+        foreach ($productYSkus as $key => $ySku) {
+            $min = (float)$minThresholds[$key];
+            $max = isset($maxThresholds[$key]) && $maxThresholds[$key] !== '' ? (float)$maxThresholds[$key] : 0.0;
+            $desc = $productYDescriptions[$key] ?? (string)__('Free Product');
 
-                $this->log('SPENDXGETY cart sub total of '. $subTotal. ' meets minimum requirement of '. $spendCartTotalRequired[$key]);
+            $meetsMin = $subTotal >= $min;
+            $withinMax = ($max == 0.0) ? true : ($subTotal <= $max);
+            $qualifies = $meetsMin && $withinMax;
 
-                // LOGIC
-                //
-                $cartData=$this->getCartItems();
-                if ($cartData)
-                {
+            $this->log(sprintf('subtotal=%.2f, min=%.2f, max=%s -> qualifies=%s',
+                $subTotal, $min, ($max == 0.0 ? '∞' : number_format($max,2)), $qualifies ? 'yes' : 'no'
+            ));
 
-                    // LOGIC 1
-                    if (
-                            isset($cartData[$productYSkus[$key]])
-                        )
-                    {
-                        // product y IN Cart
-                        // minimum spend requirement met
-                        $this->log('product y IN cart - minimum spend requirement met - do nothing');
-                        if ($itemId=$cartData[$productYSkus[$key]]['qty'] > 1)
-                        {
-                            // control quantity
-                            $this->log('product y IN cart - controlling quantity');
-                            $itemId=$cartData[$productYSkus[$key]]['itemid'];
-                            $this->checkProductCartQuantity($itemId);
-                        }
-
-                    } else {
-
-                        // product y NOT IN Cart
-                        // minimum spend requirement met
-                        $this->log('product y NOT in cart - minimum spend requirement met - add to cart');
-
-                        if (!isset($productYDescriptions[$key])){
-                            if (isset($productYDescriptions[0]))
-                            {
-                                $productYDescriptions[$key]=$productYDescriptions[0];
-                            } else {
-                                $productYDescriptions[$key]='Free Product';
-                            }
-                        }
-                        $this->addProductToCart($productYSkus[$key],1,$productYDescriptions[$key]);
-
+            if ($qualifies) {
+                if ($cartData && isset($cartData[$ySku])) {
+                    // Ensure qty is 1
+                    $yQty = (int)$cartData[$ySku]['qty'];
+                    if ($yQty > 1) {
+                        $this->checkProductCartQuantity($cartData[$ySku]['itemid'], 1);
+                        $this->log('Reduced Y qty to 1 for ' . $ySku);
                     }
-
-
+                } else {
+                    $this->addProductToCart($ySku, 1, $desc);
+                    $this->log('Added Y ' . $ySku);
                 }
-
             } else {
-
-                $cartData=$this->getCartItems();
-                if ($cartData)
-                {
-
-                    $this->log('SPENDXGETY cart sub total of '. $subTotal. ' does not meet minimum requirement of '. $spendCartTotalRequired[$key]);
-
-                    if (
-                            isset($cartData[$productYSkus[$key]])
-                        )
-                    {
-                        // product y IN Cart
-                        // minimum spend requirement NOT met - remove from cart
-                        $this->log('product y IN cart - minimum spend requirement NOT met - remove from cart');
-                        $itemId=$cartData[$productYSkus[$key]]['itemid'];
-                        if (!isset($productYDescriptions[$key])){$productYDescriptions[$key]='Free Product';}
-                        $this->removeProductFromCart($itemId,$productYDescriptions[$key]);
-
-                    } else {
-
-                        $this->log('product y NOT IN cart');
-                    }
+                if ($cartData && isset($cartData[$ySku])) {
+                    $this->removeProductFromCart($cartData[$ySku]['itemid'], $desc);
+                    $this->log('Removed Y ' . $ySku . ' (not qualified)');
+                } else {
+                    $this->log('Y ' . $ySku . ' not in cart (not qualified)');
                 }
-            }
-
-            if ($subTotal >= $spendCartYLimit[$key] && $spendCartYLimit[$key] !=0)
-            {
-                $this->log('SPENDXGETY cart sub total of '. $subTotal. ' exceeds max Y limit of '. $spendCartYLimit[$key]);
-
-                // LOGIC
-                //
-                $cartData=$this->getCartItems();
-                if ($cartData)
-                {
-
-                    // LOGIC 1
-                    if (
-                            isset($cartData[$productYSkus[$key]])
-                        )
-                    {
-                        // product y IN Cart
-                        // Y limit exceeded
-                        $this->log('product y IN cart - y limit exceeded - remove poduct y');
-                        $itemId=$cartData[$productYSkus[$key]]['itemid'];
-                        if (!isset($productYDescriptions[$key])){
-                            if (isset($productYDescriptions[0]))
-                            {
-                                $productYDescriptions[$key]=$productYDescriptions[0];
-                            } else {
-                                $productYDescriptions[$key]='Free Product';
-                            }
-                        }
-                        $this->removeProductFromCart($itemId,$productYDescriptions[$key]);
-
-                    } else {
-
-                        // product y NOT IN Cart
-                        // Y limit exceeded
-                        $this->log('product y NOT in cart - y limit exceeded - do nothing.');
-                    }
-
-                }
-
             }
         }
-
-
-
     }
 
-
-    /**
-     * Gets cart from session
-     *
-     * @return array
-     */
     public function getCartItems()
     {
-        // build cart data arrqy
-        //
-        $cartItems = $this->_helperData->getCartAllItems();
-        $cartItemQuantities=array();
-        $cartItemQuantitiesBySku=array();
-        $cartData=array();
-        $count=0;
+        $items = $this->_helperData->getCartAllItems();
+        $cartData = [];
+        $byId = [];
+        $bySku = [];
+        $count = 0;
 
-        foreach ($cartItems as $item)
-        {
+        foreach ($items as $item) {
             $count++;
-
-            // if item has parent, use parent
-            //
-            //if ($item->getParentItem()) {$item=$item->getParentItem();}
-
-            $cartData[$item->getSku()]=array(
-                'name' =>  $item->getName(),
-                'qty' =>  $item->getQty(),
-                'itemid' =>  $item->getId(),
-                'type' => $item->getProduct()->getTypeId(),
+            $cartData[$item->getSku()] = [
+                'name'      => $item->getName(),
+                'qty'       => $item->getQty(),
+                'itemid'    => $item->getId(),
+                'type'      => $item->getProduct()->getTypeId(),
                 'productid' => $item->getProduct()->getId(),
-            );
-
-            // build quantities array to get true totals for products with parents, i.e. configurable products
-            //
-            $cartItemQuantities[$item->getProduct()->getId()][] = $item->getQty();
-            $cartItemQuantitiesBySku[$item->getProduct()->getSku()][] = $item->getQty();
+            ];
+            $byId[$item->getProduct()->getId()][]        = $item->getQty();
+            $bySku[$item->getProduct()->getSku()][]      = $item->getQty();
         }
 
-        $cartData['cartItemQuantities']=$cartItemQuantities;
-        $cartData['cartItemQuantitiesBySku']=$cartItemQuantitiesBySku;
+        $cartData['cartItemQuantities']      = $byId;
+        $cartData['cartItemQuantitiesBySku'] = $bySku;
 
-        $this->log(array('SPENDXXGETY' => $cartData));
-        $this->log('SPENDXXGETY Total Cart Items : '. $count);
+        $this->log(['SPENDXGETY' => $cartData]);
+        $this->log('SPENDXGETY Total Cart Items: ' . $count);
 
-        if (count($cartData) > 0 )
-        {
-            return $cartData;
-        }
-        return false;
-
+        return count($cartData) > 0 ? $cartData : false;
     }
 
-    /**
-     * addProductToCart adds $productSku to cart default $qty = 1
-     *
-     * @param string $productSku
-     * @param int $qty
-     * @return void
-     */
-    protected function addProductToCart($productSku,$qty=1,$productYDescription='Free Product')
+    protected function addProductToCart($productSku, $qty = 1, $productYDescription = 'Free Product'): void
     {
-        $this->log('trying to add product SKU '. $productSku. ' to the cart...');
-        $product = $this->_productRepository->get($productSku);
-        $productID=$product->getId();
+        $product   = $this->_productRepository->get($productSku);
+        $productID = (int)$product->getId();
 
-        $params = array(
-            'product' => $productID,
-            'qty' => $qty
-        );
+        $params = ['product' => $productID, 'qty' => (int)$qty];
 
-        $this->_cart->addProduct($product,$params);
+        $this->_cart->addProduct($product, $params);
         $this->_cart->save();
+        $this->recollectTotals();
 
-        // https://magento.stackexchange.com/questions/138531/magento-2-how-to-update-cart-after-cart-update-event-checkout-cart-update-ite
-        //$quoteObject = $this->_cartInterface->get($this->_cart->getQuote()->getId());
-        //$quoteObject->setTriggerRecollect(1);
-        //$quoteObject->setIsActive(true);
-        //$quoteObject->collectTotals()->save();
-
-        $this->addMessage(__('Your %1 has been added to your cart.',$productYDescription),'notice');
-        $this->log('product SKU '. $productSku. ' was added to the cart.');
-
+        $this->addMessage(__('Your %1 has been added to your cart.', $productYDescription), 'notice');
     }
 
-    /**
-     * removeProductFromCart removes $itemID from cart
-     *
-     * @param string $itemId
-     * @return void
-     */
-    protected function removeProductFromCart($itemId,$productYDescription='Free Product')
+    protected function removeProductFromCart($itemId, $productYDescription = 'Free Product'): void
     {
-
         $this->_cart->removeItem($itemId);
         $this->_cart->save();
-
-        // does this need a message?
-        //$this->addMessage(__('Your %1 has been removed from your cart.',$productYDescription),'notice');
-
-        $this->log('cart ID '. $itemId. ' was removed from the cart.');
-
+        $this->recollectTotals();
+        // Intentionally no message to avoid spam
     }
 
-    /**
-     * checkProductCartQuantity controls the allowed quantitiy for $item in the cart by setting $qty
-     *
-     * @param string $itemId
-     * @param int $qty
-     * @return void
-     */
-    protected function checkProductCartQuantity($itemId,$qty=1)
+    protected function checkProductCartQuantity($itemId, $qty = 1): void
     {
-        $params[$itemId]['qty'] = $qty;
+        $params = [];
+        $params[$itemId]['qty'] = (int)$qty;
+
         $this->_cart->updateItems($params);
-
         $this->_cart->save();
-
-        //$this->addMessage('Only '. $qty. ' free product is allowed.','notice');
-
-        $this->log('cart ID '. $itemId. ' was checked for qty.');
-
+        $this->recollectTotals();
     }
 
-    /**
-     * Add Message - checks for message duplication
-     *
-     * @param string $newMessage
-     * @param string $messageType - defaults to notice
-     * @return void
-     */
-    protected function addMessage($newMessage,$messageType='notice')
+    protected function addMessage($newMessage, $messageType = 'notice')
     {
-
-        $messages=$this->getMessages();
-        foreach ($messages as $message)
-        {
-            // try not to duplicate messages
-            if ($newMessage == $message){return false;}
+        $newText = (string)$newMessage;
+        foreach ($this->getMessages() as $message) {
+            if ($newText === (string)$message) return false;
         }
-
-        if ($messageType==='notice'){$this->_messageManager->addNoticeMessage($newMessage);}
-        if ($messageType==='error'){$this->_messageManager->addErrorMessage($newMessage);}
-        if ($messageType==='success'){$this->_messageManager->addSuccessMessage($newMessage);}
-        if ($messageType==='warning'){$this->_messageManager->addWarningMessage($newMessage);}
-
+        switch ($messageType) {
+            case 'error':   $this->_messageManager->addErrorMessage($newText); break;
+            case 'success': $this->_messageManager->addSuccessMessage($newText); break;
+            case 'warning': $this->_messageManager->addWarningMessage($newText); break;
+            default:        $this->_messageManager->addNoticeMessage($newText);
+        }
     }
 
-    /**
-     * getMessages from Message Manager and create array of messages
-     *
-     * @return array
-     */
-    protected function getMessages()
+    protected function getMessages(): array
     {
-        $messages = array();
+        $messages = [];
         $collection = $this->_messageManager->getMessages();
         if ($collection && $collection->getItems()) {
             foreach ($collection->getItems() as $message) {
                 $messages[] = $message->getText();
             }
         }
-
         return $messages;
     }
 
-    /**
-     * isEnabled
-     *
-     * @return boolean
-     */
-    protected function isEnabled()
+    protected function isEnabled(): bool
     {
-        return $this->_helperData->getConfig('buyxgety/spendxgety/spendxgetyenable');
+        return (bool)$this->_helperData->getConfig('buyxgety/spendxgety/spendxgetyenable');
     }
 
-    /**
-     * log
-     *
-     * @param string $data
-     * @return boolean
-     */
-    public function log($data)
+    public function log($data): void
     {
-        if (!$this->_debug) {return;}
-
-        if (is_array($data))
-        {
-            $this->_logger->debug('debug SPENDXGETY : '. print_r($data,true));
-        } else {
-            $this->_logger->debug('debug SPENDXGETY : '. $data);
-        }
-
+        if (!$this->_debug) return;
+        $this->_logger->debug('debug SPENDXGETY : ' . (is_array($data) ? print_r($data, true) : $data));
     }
 
-    /**
-     * removes empty values from an array - useful when using explode()
-     *
-     * @param array $array
-     * @return array
-     */
-    private function cleanArray($array)
+    private function csvToArray($csv, bool $keepZero = false): array
     {
-        foreach ($array as $key => $value) {
-            if (empty($value) && $value !=0) {
-               unset($array[$key]);
-            }
-        }
-
-        return $array;
+        if ($csv === null) return [];
+        $parts = array_map('trim', explode(',', (string)$csv));
+        return array_values(array_filter($parts, function ($v) use ($keepZero) {
+            return $keepZero ? ($v !== '') : ($v !== '' && $v !== '0');
+        }));
     }
 
-    /**
-     * isUnique check if array as unique values
-     *
-     * @param array $array
-     * @return boolean
-     */
-    private function isUnique($array)
-	{
+    // returns true if duplicates exist (kept to match earlier code)
+    private function isUnique($array): bool
+    {
         return (array_unique($array) != $array);
-	}
+    }
 
+    private function recollectTotals(): void
+    {
+        $quote = $this->_cartInterface->get($this->_cart->getQuote()->getId());
+        $quote->setTriggerRecollect(1);
+        $quote->setIsActive(true);
+        $this->_cartInterface->save($quote->collectTotals());
+    }
 }

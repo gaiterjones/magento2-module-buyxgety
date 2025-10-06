@@ -2,7 +2,7 @@
   "name": "gaiterjones/magento2-module-buyxgety",
   "description": "Gaiterjones Buy X Get Y Module",
   "type": "magento2-module",
-  "version": "1.2.2",
+  "version": "1.3.2",
   "license": [
     "OSL-3.0",
     "AFL-3.0"
